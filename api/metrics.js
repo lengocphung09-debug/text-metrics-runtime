@@ -13,7 +13,8 @@ export function measure(text){
   for(const t of tokens){const k=t.toLowerCase();freq.set(k,(freq.get(k)||0)+1);}
   const ranked=[...freq].filter(([,n])=>n>=2).sort((a,b)=>b[1]-a[1]||cmpScalar(a[0],b[0])).slice(0,500);
   return {
-    version:"1.9.1",
+    version:"1.9.2",
+    tm_arp:{release_controller:"TM-ARP-v1.0",change_class:"PATCH_SAFE"},
     source_sha256:crypto.createHash("sha256").update(text,"utf8").digest("hex"),
     unicode_code_points:Array.from(text).length,
     utf8_bytes:Buffer.byteLength(text,"utf8"),
@@ -27,7 +28,7 @@ export function measure(text){
   };
 }
 export default function handler(req,res){
-  if(req.method==="GET") return res.status(200).json({status:"ok",service:"text-metrics-runtime",version:"1.9.1"});
+  if(req.method==="GET") return res.status(200).json({status:"ok",service:"text-metrics-runtime",version:"1.9.2",tm_arp:{release_controller:"TM-ARP-v1.0",change_class:"PATCH_SAFE"}});
   if(req.method!=="POST") return res.status(405).json({error:"method_not_allowed"});
   try{
     const text=req.body?.text;

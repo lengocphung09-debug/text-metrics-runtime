@@ -1,0 +1,7 @@
+{
+  "version": "1.9.1",
+  "commit": "20e447f340bbd68572b11f9cc02259c6eed46127",
+  "production_endpoint": "https://text-metrics-runtime.vercel.app/api/metrics",
+  "evidence_run_id": "35336534181",
+  "state": "VERIFIED"
+}

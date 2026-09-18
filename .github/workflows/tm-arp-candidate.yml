@@ -1,0 +1,38 @@
+name: TM-ARP Candidate Conformance
+on:
+  pull_request:
+  push:
+    branches: [tm-arp-v1.0-live-pilot]
+permissions:
+  contents: read
+concurrency:
+  group: tm-arp-candidate-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  conformance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: 22}
+      - run: npm test
+      - name: Architecture and evidence contract
+        run: |
+          test -f tm-arp/ARCHITECTURE.md
+          test -f tm-arp/policies/release-policy.json
+          test -f tm-arp/schemas/release-request.schema.json
+          test -f tm-arp/schemas/evidence.schema.json
+          test -f tm-arp/last-known-good.json
+          node -e 'const p=require("./tm-arp/policies/release-policy.json");if(!p.fail_closed||p.rollback.target!=="LAST_KNOWN_GOOD")process.exit(1)'
+      - name: Pilot v1.9.2 deterministic and adversarial conformance
+        run: |
+          node --input-type=module - <<'NODE'
+          import {measure} from './api/metrics.js';
+          let x=measure('b a b a c');
+          if(x.version!=='1.9.2'||x.tm_arp?.release_controller!=='TM-ARP-v1.0')process.exit(1);
+          if(JSON.stringify(x.frequency_top_500.map(v=>[v.token,v.count]))!==JSON.stringify([['a',2],['b',2]]))process.exit(1);
+          x=measure('😀 Học học 学 学');
+          const m=new Map(x.frequency_top_500.map(v=>[v.token,v.count]));
+          if(m.get('học')!==2||m.get('学')!==2||x.utf8_bytes<=x.unicode_code_points)process.exit(1);
+          let failed=false;try{measure(123)}catch(e){failed=e instanceof TypeError}if(!failed)process.exit(1);
+          NODE

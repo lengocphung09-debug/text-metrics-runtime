@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "TM-ARP Evidence",
+  "type": "object",
+  "required": [
+    "run_id",
+    "candidate_version",
+    "source_commit",
+    "ci",
+    "runtime",
+    "state"
+  ],
+  "properties": {
+    "run_id": {
+      "type": "string"
+    },
+    "candidate_version": {
+      "type": "string"
+    },
+    "source_commit": {
+      "type": "string"
+    },
+    "ci": {
+      "enum": [
+        "PASS",
+        "FAIL",
+        "UNVERIFIED"
+      ]
+    },
+    "runtime": {
+      "enum": [
+        "PASS",
+        "FAIL",
+        "UNVERIFIED"
+      ]
+    },
+    "state": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true
+}
