@@ -1,0 +1,19 @@
+{
+  "schema": "TM-ARP-RELEASE-POLICY-v1",
+  "max_auto_repair_attempts": 3,
+  "patch_safe": {
+    "auto_ci": true,
+    "auto_preview": true,
+    "production_requires_authorization": true
+  },
+  "semantic_change": {
+    "production_requires_authorization": true
+  },
+  "rollback": {
+    "automatic_on_required_production_gate_failure": true,
+    "target": "LAST_KNOWN_GOOD"
+  },
+  "fail_closed": true,
+  "concurrency_group": "tm-arp-production",
+  "cancel_in_progress": false
+}
