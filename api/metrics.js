@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 
-const lexicalTokens = text => text.match(/[^\W_]+/gu) ?? [];
+const lexicalTokens = text => text.match(/[\p{L}\p{M}\p{N}]+/gu) ?? [];
 const scalarKey = s => Array.from(s, c => c.codePointAt(0));
 const cmpScalar = (a,b) => {
   const A=scalarKey(a), B=scalarKey(b), n=Math.min(A.length,B.length);
