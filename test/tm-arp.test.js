@@ -1,0 +1,10 @@
+import test from "node:test";import assert from "node:assert/strict";
+import {classify,judge,authorization,rollbackTarget} from "../tm-arp/controller.mjs";
+test("patch-safe classification",()=>assert.equal(classify({}),"PATCH_SAFE"));
+test("semantic change gated",()=>assert.equal(classify({semantic:true}),"MINOR_SEMANTIC"));
+test("authority change gated",()=>assert.equal(classify({authority_boundary:true}),"GOVERNANCE_SENSITIVE"));
+test("missing runtime fails closed",()=>assert.equal(judge({baseline:"PASS",tests:"PASS",ci:"PASS",runtime:"UNVERIFIED",evidence:"PASS"}).state,"BLOCKED"));
+test("all evidence release eligible",()=>assert.equal(judge({baseline:"PASS",tests:"PASS",ci:"PASS",runtime:"PASS",evidence:"PASS"}).state,"RELEASE_ELIGIBLE"));
+test("authorization gate",()=>assert.equal(authorization("PATCH_SAFE",false).state,"AUTHORIZATION_REQUIRED"));
+test("verified rollback target",()=>assert.equal(rollbackTarget({state:"VERIFIED",version:"1.9.1"}).version,"1.9.1"));
+test("unverified rollback target rejected",()=>assert.throws(()=>rollbackTarget({state:"UNVERIFIED"})));
