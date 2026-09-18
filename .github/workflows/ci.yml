@@ -12,3 +12,5 @@ jobs:
         with:
           node-version: 22
       - run: npm test
+      - name: Performance benchmark
+        run: npm run benchmark

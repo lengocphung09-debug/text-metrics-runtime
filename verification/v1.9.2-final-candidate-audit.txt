@@ -1,0 +1,26 @@
+TEXT-METRICS v1.9.2 FINAL CANDIDATE AUDIT — 2026-09-18
+
+State: FINAL_AUDIT_COMPLETE; CANDIDATE_TECHNICAL_VALIDATION=PASS_WITH_EXPLICIT_EVIDENCE_BOUNDARIES.
+
+Evidence:
+- isolated branch tm-v1.9.2-candidate; Draft PR #2.
+- frozen fixture registry present.
+- v1.9.1 deterministic regression preserved.
+- CI run #13 SUCCESS after corrective repair.
+- Red-Team covers Sanskrit non-fabrication/no-merge/order, mixed-language bounded detection, Han unit honesty, unsupported-Latin abstention, Top-500, Unicode, source immutability.
+- benchmark executed in CI; prior run #12 measured 28k/280k/2.8m code points at approximately 33.454/243.075/2099.349 ms on that runner.
+- Vercel PR comment reports Preview deployment Ready.
+
+Evidence boundaries:
+- language identification remains bounded/heuristic where no validated language-specific detector exists.
+- Sanskrit etymology is curated-mapping only; no phonetic guessing.
+- Vercel Ready is not semantic runtime verification.
+- direct preview runtime semantic verification remains UNVERIFIED because available Vercel connector access returned 403 for deployment listing and protected preview fetch could not produce a shareable URL.
+- native ChatGPT host registration and actual parallel host execution are not inferred.
+
+Authority: Text-Metrics measurement/bounded diagnostics only; ARIS/VLF/Kernel boundaries preserved.
+
+Release:
+PRODUCTION_PROMOTION=NOT_PERFORMED
+v1.9.1_DEFAULT=PRESERVED
+PRODUCTION_RELEASE=BLOCKED_PENDING_DIRECT_PREVIEW_RUNTIME_VERIFICATION_AND_EXPLICIT_PROMOTION_AUTHORIZATION

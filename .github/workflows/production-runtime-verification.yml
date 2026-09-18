@@ -16,9 +16,14 @@ jobs:
       - name: GET health
         run: |
           set -euo pipefail
-          curl --fail --show-error --silent --retry 6 --retry-delay 5 https://text-metrics-runtime.vercel.app/api/metrics > /tmp/health.json
+          for i in $(seq 1 36); do
+            curl --fail --show-error --silent https://text-metrics-runtime.vercel.app/api/metrics > /tmp/health.json || true
+            if node -e 'const x=require("/tmp/health.json"); process.exit(x.status==="ok"&&x.service==="text-metrics-runtime"&&x.version==="1.9.2"?0:1)' 2>/dev/null; then break; fi
+            if [ "$i" = "36" ]; then echo "production did not converge to 1.9.2"; exit 1; fi
+            sleep 5
+          done
           cat /tmp/health.json
-          node -e 'const x=require("/tmp/health.json"); if(x.status!=="ok"||x.service!=="text-metrics-runtime"||x.version!=="1.9.1") process.exit(1)'
+          node -e 'const x=require("/tmp/health.json"); if(x.status!=="ok"||x.service!=="text-metrics-runtime"||x.version!=="1.9.2") process.exit(1)'
       - name: POST deterministic metrics
         run: |
           set -euo pipefail
@@ -27,7 +32,7 @@ jobs:
           node - <<'NODE'
           const x=require('/tmp/basic.json');
           const got=x.frequency_top_500.map(v=>[v.token,v.count]);
-          if(x.version!=='1.9.1'||JSON.stringify(got)!==JSON.stringify([['a',2],['b',2]])) process.exit(1);
+          if(x.version!=='1.9.2'||JSON.stringify(got)!==JSON.stringify([['a',2],['b',2]])) process.exit(1);
           NODE
       - name: Unicode adversarial
         run: |
@@ -38,6 +43,15 @@ jobs:
           const x=require('/tmp/unicode.json');
           const m=new Map(x.frequency_top_500.map(v=>[v.token,v.count]));
           if(x.utf8_bytes<=x.unicode_code_points||m.get('học')!==2||m.get('学')!==2) process.exit(1);
+          NODE
+      - name: FULL and Sanskrit bounded semantics
+        run: |
+          set -euo pipefail
+          curl --fail --show-error --silent -H 'content-type: application/json' --data '{"text":"Bồ Tát gặp Bồ Tát. Tam muội."}' https://text-metrics-runtime.vercel.app/api/metrics > /tmp/full.json
+          node - <<'NODE'
+          const x=require('/tmp/full.json');
+          const s=new Map(x.sanskrit_origin.entries.map(v=>[v.source_surface,v.count]));
+          if(x.version!=='1.9.2'||x.execution_mode!=='FULL'||x.report_language!=='vi-VN'||s.get('Bồ Tát')!==2||s.get('Tam muội')!==1) process.exit(1);
           NODE
       - name: Invalid input fails closed
         run: |
@@ -52,12 +66,13 @@ jobs:
           node - <<'NODE'
           const fs=require('fs');
           const evidence={
-            schema:"TM191-PRODUCTION-RUNTIME-VERIFICATION-v1",
+            schema:"TM192-PRODUCTION-RUNTIME-VERIFICATION-v1",
             endpoint:"https://text-metrics-runtime.vercel.app/api/metrics",
-            version:"1.9.1",
+            version:"1.9.2",
             get_health:"PASS",
             deterministic_post:"PASS",
             unicode_adversarial:"PASS",
+            full_sanskrit_bounded:"PASS",
             invalid_input_fail_closed:"PASS",
             production_runtime:"VERIFIED",
             github_run_id:process.env.GITHUB_RUN_ID,

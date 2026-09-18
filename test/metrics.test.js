@@ -1,4 +1,12 @@
-import test from "node:test";import assert from "node:assert/strict";import {measure} from "../api/metrics.js";
-test("deterministic core metrics",()=>{const r=measure("Học thuật cần bằng chứng. Evidence requires verification.");assert.equal(r.unicode_lexical_tokens,8);assert.equal(r.physical_lines,1);assert.equal(r.frequency_top_500.length,0);});
-test("frequency deterministic",()=>{const r=measure("b a b a c");assert.deepEqual(r.frequency_top_500.map(x=>[x.token,x.count]),[["a",2],["b",2]]);});
-test("unicode code points and bytes",()=>{const r=measure("😀");assert.equal(r.unicode_code_points,1);assert.equal(r.utf8_bytes,4);});
+import test from "node:test";import assert from "node:assert/strict";import {measure,renderVietnamese,VERSION} from "../api/metrics.js";
+test("v1.9.1 deterministic regression",()=>{const r=measure("b a b a c");assert.equal(r.unicode_code_points,9);assert.equal(r.utf8_bytes,9);assert.equal(r.whitespace_code_points,4);assert.equal(r.physical_lines,1);assert.equal(r.whitespace_tokens,5);assert.equal(r.unicode_lexical_tokens,5);assert.equal(r.unique_lexical_types,3);assert.equal(r.repeated_lexical_types,2);assert.deepEqual(r.frequency_top_500.map(x=>[x.token,x.count]),[["a",2],["b",2]]);});
+test("FULL locked",()=>{const r=measure("abc");assert.equal(r.version,"1.9.2");assert.equal(r.execution_mode,"FULL");assert.equal(r.report_language,"vi-VN");assert.equal(r.report_section_scheme,"arabic_1_to_n");});
+test("Sanskrit surfaces include repeated and hapax",()=>{const r=measure("Bồ Tát gặp Bồ Tát. Tam muội.");assert.deepEqual(r.sanskrit_origin.entries.map(x=>[x.source_surface,x.count]),[["Bồ Tát",2],["Tam muội",1]]);});
+test("Vietnamese report numbered 1..23",()=>{const s=renderVietnamese(measure("Bồ Tát"));for(let i=1;i<=23;i++)assert.match(s,new RegExp("^"+i+"\\. ","m"));assert.doesNotMatch(s,/^[A-Z]\. /m);});
+test("mixed language bounded detection",()=>{const r=measure("Học thuật and evidence 学 学");assert.ok(r.language_script_detection.detected_languages.includes("Việt Nam"));assert.ok(r.language_script_detection.detected_languages.includes("Anh"));assert.ok(r.language_script_detection.detected_languages.some(x=>x.startsWith("Hán")));});
+test("unicode adversarial preserved",()=>{const r=measure("😀 Học học 学 学");assert.equal(r.unicode_code_points,13);assert.equal(r.utf8_bytes,24);assert.equal(r.unicode_lexical_tokens,4);});
+test("etymology is curated not phonetic guess",()=>{const r=measure("Bồ đề foo");assert.equal(r.sanskrit_origin.entries[0].canonical_sanskrit,"Bodhi");assert.equal(r.sanskrit_origin.entries[0].evidence_class,"CURATED");});
+test("no universal correctness claim",()=>assert.equal(measure("x").validation.finite_test_success_is_universal_correctness,false));
+
+test("Sanskrit lexicon extends beyond seed examples",()=>{const r=measure("Niết bàn và Bát nhã");assert.deepEqual(r.sanskrit_origin.entries.map(x=>x.source_surface),["Bát nhã","Niết bàn"]);});
+test("visible headings avoid mixed-English primary labels",()=>{const s=renderVietnamese(measure("Bồ Tát"));assert.doesNotMatch(s,/Thống kê từ\/tokens|Từ gốc Phạn \/ Sanskrit/);});
