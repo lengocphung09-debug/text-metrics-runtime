@@ -47,12 +47,17 @@ jobs:
       - name: FULL and Sanskrit bounded semantics
         run: |
           set -euo pipefail
-          curl --fail --show-error --silent -H 'content-type: application/json' --data '{"text":"Bồ Tát gặp Bồ Tát. Tam muội."}' https://text-metrics-runtime.vercel.app/api/metrics > /tmp/full.json
-          node - <<'NODE'
-          const x=require('/tmp/full.json');
-          const s=new Map(x.sanskrit_origin.entries.map(v=>[v.source_surface,v.count]));
-          if(x.version!=='1.9.2'||x.execution_mode!=='FULL'||x.report_language!=='vi-VN'||s.get('Bồ Tát')!==2||s.get('Tam muội')!==1) process.exit(1);
-          NODE
+          for i in $(seq 1 36); do
+            curl --fail --show-error --silent -H 'content-type: application/json' --data '{"text":"Bồ Tát gặp Bồ Tát. Tam muội."}' https://text-metrics-runtime.vercel.app/api/metrics > /tmp/full.json || true
+            if node - <<'NODE'
+const x=require('/tmp/full.json');
+const s=new Map((x.sanskrit_origin?.entries||[]).map(v=>[v.source_surface,v.count]));
+process.exit(x.version==='1.9.2'&&x.execution_mode==='FULL'&&x.report_language==='vi-VN'&&s.get('Bồ Tát')===2&&s.get('Tam muội')===1?0:1);
+NODE
+            then break; fi
+            if [ "$i" = "36" ]; then echo "FULL Sanskrit semantics did not converge"; cat /tmp/full.json; exit 1; fi
+            sleep 5
+          done
       - name: Invalid input fails closed
         run: |
           set -euo pipefail
