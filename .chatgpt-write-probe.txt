@@ -1,1 +1,0 @@
-ChatGPT reversible write probe for text-metrics-runtime.
