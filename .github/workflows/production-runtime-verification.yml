@@ -1,0 +1,56 @@
+name: Production Runtime Verification
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/production-runtime-verification.yml'
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: GET health
+        run: |
+          set -euo pipefail
+          curl --fail --show-error --silent --retry 4 --retry-delay 5 \
+            https://text-metrics-runtime.vercel.app/api/metrics > /tmp/health.json
+          cat /tmp/health.json
+          node -e 'const x=require("/tmp/health.json"); if(x.status!=="ok"||x.service!=="text-metrics-runtime"||x.version!=="1.9.1") process.exit(1)'
+      - name: POST deterministic metrics
+        run: |
+          set -euo pipefail
+          curl --fail --show-error --silent \
+            -H 'content-type: application/json' \
+            --data '{"text":"b a b a c"}' \
+            https://text-metrics-runtime.vercel.app/api/metrics > /tmp/basic.json
+          cat /tmp/basic.json
+          node - <<'NODE'
+          const x=require('/tmp/basic.json');
+          const got=x.frequency_top_500.map(v=>[v.token,v.count]);
+          if(x.version!=='1.9.1') process.exit(1);
+          if(JSON.stringify(got)!==JSON.stringify([['a',2],['b',2]])) process.exit(1);
+          NODE
+      - name: Unicode adversarial
+        run: |
+          set -euo pipefail
+          curl --fail --show-error --silent \
+            -H 'content-type: application/json' \
+            --data '{"text":"😀 Học học 学 学"}' \
+            https://text-metrics-runtime.vercel.app/api/metrics > /tmp/unicode.json
+          cat /tmp/unicode.json
+          node - <<'NODE'
+          const x=require('/tmp/unicode.json');
+          if(x.utf8_bytes<=x.unicode_code_points) process.exit(1);
+          const m=new Map(x.frequency_top_500.map(v=>[v.token,v.count]));
+          if(m.get('học')!==2 || m.get('学')!==2) process.exit(1);
+          NODE
+      - name: Invalid input fails closed
+        run: |
+          set -euo pipefail
+          code=$(curl --silent --output /tmp/bad.json --write-out '%{http_code}' \
+            -H 'content-type: application/json' \
+            --data '{"text":123}' \
+            https://text-metrics-runtime.vercel.app/api/metrics)
+          cat /tmp/bad.json
+          test "$code" = "400"
+          node -e 'const x=require("/tmp/bad.json"); if(x.error!=="text_must_be_string") process.exit(1)'
