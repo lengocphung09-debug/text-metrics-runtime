@@ -1,0 +1,16 @@
+{
+  "feature_id": "TM-FEAT-191-001",
+  "title": "Expose runtime release metadata",
+  "baseline": "1.9.1",
+  "candidate": "1.9.2",
+  "requested_behavior": "Add additive release metadata to health and measurement responses without changing existing measurement semantics.",
+  "semantic_impact": "additive",
+  "backward_compatibility": "expected-compatible",
+  "change_class": "PATCH_SAFE",
+  "acceptance": [
+    "GET reports version 1.9.2 and tm_arp metadata",
+    "POST preserves deterministic metrics",
+    "Unicode adversarial vector passes",
+    "invalid text fails closed"
+  ]
+}
