@@ -7,3 +7,6 @@ test("mixed language bounded detection",()=>{const r=measure("Học thuật and 
 test("unicode adversarial preserved",()=>{const r=measure("😀 Học học 学 学");assert.equal(r.unicode_code_points,13);assert.equal(r.utf8_bytes,24);assert.equal(r.unicode_lexical_tokens,4);});
 test("etymology is curated not phonetic guess",()=>{const r=measure("Bồ đề foo");assert.equal(r.sanskrit_origin.entries[0].canonical_sanskrit,"Bodhi");assert.equal(r.sanskrit_origin.entries[0].evidence_class,"CURATED");});
 test("no universal correctness claim",()=>assert.equal(measure("x").validation.finite_test_success_is_universal_correctness,false));
+
+test("Sanskrit lexicon extends beyond seed examples",()=>{const r=measure("Niết bàn và Bát nhã");assert.deepEqual(r.sanskrit_origin.entries.map(x=>x.source_surface),["Bát nhã","Niết bàn"]);});
+test("visible headings avoid mixed-English primary labels",()=>{const s=renderVietnamese(measure("Bồ Tát"));assert.doesNotMatch(s,/Thống kê từ\/tokens|Từ gốc Phạn \/ Sanskrit/);});
