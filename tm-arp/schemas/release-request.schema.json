@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "TM-ARP Release Request",
+  "type": "object",
+  "required": [
+    "run_id",
+    "baseline_version",
+    "candidate_version",
+    "change_class",
+    "features"
+  ],
+  "properties": {
+    "run_id": {
+      "type": "string"
+    },
+    "baseline_version": {
+      "type": "string"
+    },
+    "candidate_version": {
+      "type": "string"
+    },
+    "change_class": {
+      "enum": [
+        "PATCH_SAFE",
+        "MINOR_SEMANTIC",
+        "MAJOR_SEMANTIC",
+        "GOVERNANCE_SENSITIVE"
+      ]
+    },
+    "features": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": false
+}
