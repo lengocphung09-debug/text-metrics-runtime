@@ -1,1 +1,13 @@
-{"name":"text-metrics-runtime","version":"1.9.1","private":true,"type":"module","scripts":{"test":"node --test"},"engines":{"node":">=20"}}
+{
+  "name": "text-metrics-runtime",
+  "version": "1.9.2",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "benchmark": "node test/benchmark-v1.9.2.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
