@@ -11,6 +11,8 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
       - name: GET health
         run: |
           set -euo pipefail
