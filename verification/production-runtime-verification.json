@@ -1,0 +1,12 @@
+{
+  "schema": "TM191-PRODUCTION-RUNTIME-VERIFICATION-v1",
+  "endpoint": "https://text-metrics-runtime.vercel.app/api/metrics",
+  "version": "1.9.1",
+  "get_health": "PASS",
+  "deterministic_post": "PASS",
+  "unicode_adversarial": "PASS",
+  "invalid_input_fail_closed": "PASS",
+  "production_runtime": "VERIFIED",
+  "github_run_id": "35336534181",
+  "verified_commit": "20e447f340bbd68572b11f9cc02259c6eed46127"
+}
