@@ -1,0 +1,1 @@
+import {measure} from "../api/metrics.js";import {performance} from "node:perf_hooks";for(const n of [1000,10000,100000]){const s=("Bồ Tát học thuật evidence 学 ".repeat(n));const t=performance.now();measure(s);console.log(JSON.stringify({repetitions:n,code_points:Array.from(s).length,elapsed_ms:+(performance.now()-t).toFixed(3)}));}
