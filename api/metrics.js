@@ -10,7 +10,7 @@ const cmpScalar = (a,b) => {
 export function measure(text){
   if(typeof text!=="string") throw new TypeError("text must be a string");
   const tokens=lexicalTokens(text), freq=new Map();
-  for(const t of tokens){const k=t.toLocaleLowerCase("und");freq.set(k,(freq.get(k)||0)+1);}
+  for(const t of tokens){const k=t.toLowerCase();freq.set(k,(freq.get(k)||0)+1);}
   const ranked=[...freq].filter(([,n])=>n>=2).sort((a,b)=>b[1]-a[1]||cmpScalar(a[0],b[0])).slice(0,500);
   return {
     version:"1.9.1",
